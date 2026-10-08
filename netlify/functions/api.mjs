@@ -1,5 +1,6 @@
 import { getStore } from "@netlify/blobs";
 import { handle } from "../../lib/api.mjs";
+import { pushHizmeti } from "../../lib/push.mjs";
 
 // Netlify'da ADMIN_SIFRE eklenmemişse kullanılan varsayılan şifrenin özeti (sha256).
 // Şifrenin kendisi kodda açık yazmaz. Varsayılan şifre: pendik2026
@@ -32,7 +33,9 @@ export default async (req) => {
     const gelen = (req.headers.get("x-admin-sifre") || "").trim();
     sifre = gelen && (await ozet(gelen)) === VARSAYILAN_SIFRE_OZETI ? gelen : crypto.randomUUID();
   }
-  return handle(req, getStore({ name: "randevular", consistency: "strong" }), { ADMIN_SIFRE: sifre });
+  const store = getStore({ name: "randevular", consistency: "strong" });
+  const push = pushHizmeti(store, new URL(req.url).origin);
+  return handle(req, store, { ADMIN_SIFRE: sifre, push });
 };
 
 export const config = { path: "/api/*" };

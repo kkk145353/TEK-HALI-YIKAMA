@@ -14,6 +14,29 @@
   $$("[data-wp-link]").forEach((el) => (el.href = wa("Merhaba, halı yıkama hakkında bilgi almak istiyorum.")));
   const iframe = $("[data-harita-embed]");
 
+  // ---- Telefon numaraları (bir veya iki) ----
+  const telefonlar = [D.telefon, D.telefon2].filter(Boolean);
+  const telHref = (t) => "tel:" + t.replace(/[^\d+]/g, "");
+  const telIkon = '<svg class="ik"><use href="#i-tel"/></svg>';
+  $$("[data-tel-liste]").forEach((el) => {
+    el.innerHTML = telefonlar.map((t) => `<a class="dukkan-tel" href="${telHref(t)}">${el.classList.contains("satir") ? "" : telIkon}<span>${t}</span></a>`).join("");
+  });
+  $$("[data-ara-butonlar]").forEach((el) => {
+    el.innerHTML = telefonlar.map((t) => `<a class="btn btn-ana btn-kucuk" href="${telHref(t)}">${telIkon}${t.replace(/^\+90\s?/, "0")}</a>`).join("");
+  });
+
+  // ---- Fiyat listeleri ----
+  const tl = (n) => n.toLocaleString("tr-TR") + " ₺";
+  $$("[data-fiyat]").forEach((bolum) => {
+    const liste = D.fiyatlar?.[bolum.dataset.fiyat] || [];
+    if (!liste.length) return (bolum.hidden = true);
+    const adrestenFiyat = Object.fromEntries((D.fiyatlar.randevu || []).map((x) => [x.ad, x.fiyat]));
+    $(".fiyat-liste", bolum).innerHTML = liste.map((x) => {
+      const eski = bolum.dataset.fiyat === "dukkan" && adrestenFiyat[x.ad] > x.fiyat ? `<s title="Adresten alım fiyatı">${tl(adrestenFiyat[x.ad])}</s>` : "";
+      return `<li><span class="f-ad">${x.ad}</span><span class="f-fiyat">${eski}<b>${tl(x.fiyat)}</b><small>/ ${x.birim || "m²"}</small></span></li>`;
+    }).join("");
+  });
+
   // ---- Sekmeler ----
   function sekmeAc(ad) {
     $$(".secim-kart").forEach((b) => {
@@ -123,7 +146,7 @@
     }
     $("#sonuc-detay").textContent = v.tur === "adres"
       ? `${tarihYaz(v.tarih)}, ${v.saat} arasında adresinizden alınacak.`
-      : `Halınızı ${D.adres} adresine bırakabilirsiniz.`;
+      : `Halınızı ${D.adres} adresine bırakabilirsiniz. Gelmeden önce lütfen mutlaka arayın: ${telefonlar.join(" / ")}`;
     $("#kopyala").textContent = "Kodu kopyala";
     sonuc.hidden = false;
     document.body.style.overflow = "hidden";
@@ -168,6 +191,20 @@
     };
   }
   sonKoduGoster();
+
+  // WhatsApp'tan gelen takip linki: /?kod=XXXXXX
+  const urlKod = new URLSearchParams(location.search).get("kod");
+  if (urlKod) {
+    sorguForm.kod.value = urlKod.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem("sonKod")); } catch {}
+    if (s?.kod === sorguForm.kod.value && s.tel4) {
+      sorguForm.tel4.value = s.tel4;
+      setTimeout(() => sorguForm.requestSubmit(), 0);
+    }
+    $("#sorgula").scrollIntoView({ block: "center" });
+    if (!sorguForm.tel4.value) setTimeout(() => sorguForm.tel4.focus({ preventScroll: true }), 300);
+  }
 
   sorguForm.kod.addEventListener("input", (e) => (e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")));
   sorguForm.tel4.addEventListener("input", (e) => (e.target.value = e.target.value.replace(/\D/g, "")));

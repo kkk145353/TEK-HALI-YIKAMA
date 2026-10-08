@@ -5,11 +5,11 @@
   --metin: #2b3a47;
   --soluk: #66727d;
   --cizgi: #e3ddd2;
-  --ana: #0e6b63;
-  --ana-koyu: #0a524c;
-  --ana-acik: #e3f1ee;
-  --vurgu: #d9922e;
-  --vurgu-acik: #fbf0dd;
+  --ana: #8b1a24;
+  --ana-koyu: #6a0916;
+  --ana-acik: #f6e4e2;
+  --vurgu: #c08b2c;
+  --vurgu-acik: #faf0dc;
   --wp: #1f9e55;
   --wp-koyu: #178046;
   --hata: #b42318;
@@ -63,7 +63,7 @@ svg.ik { width: 20px; height: 20px; flex: none; }
 .ust { position: sticky; top: 0; z-index: 20; background: rgba(245, 241, 234, .9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--cizgi); }
 .ust-ic { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
 .marka { display: flex; align-items: center; gap: 10px; color: var(--murekkep); text-decoration: none; min-width: 0; }
-.marka-ikon { width: 38px; height: 38px; border-radius: 10px; background: var(--murekkep); display: grid; place-items: center; flex: none; }
+.marka-ikon { width: 38px; height: 38px; border-radius: 10px; background: var(--ana-koyu); overflow: hidden; display: grid; place-items: center; flex: none; }
 .marka-ikon svg { width: 24px; height: 24px; }
 .marka b { display: block; font-weight: 800; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .marka small { display: block; color: var(--soluk); font-size: 12px; font-weight: 600; }
@@ -297,4 +297,110 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
   .durum-adim { width: 100%; }
   .durum-adim button { flex: 1 1 auto; }
   .ust-butonlar .metin { display: none; }
+}
+
+/* ---------- Zil / bildirimler ---------- */
+.zil { position: relative; }
+.zil.cinliyor svg { animation: cin .9s ease 2; transform-origin: 50% 10%; }
+@keyframes cin { 0%,100% { transform: rotate(0); } 20% { transform: rotate(16deg); } 40% { transform: rotate(-14deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
+.zil-sayi {
+  position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px;
+  background: var(--hata); color: #fff; font-size: 12px; font-weight: 800; line-height: 20px; text-align: center;
+  box-shadow: 0 0 0 2px var(--zemin);
+}
+.zil-panel {
+  position: fixed; z-index: 40; top: 72px; right: max(16px, calc((100vw - 1080px) / 2 + 16px)); width: 360px; max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 92px); overflow: auto; background: #fff; border-radius: 16px; padding: 16px;
+  box-shadow: 0 16px 48px rgba(19, 40, 58, .22); display: grid; gap: 12px; animation: yuksel .18s ease;
+}
+.zil-baslik { display: flex; justify-content: space-between; align-items: center; }
+.kapat-x { border: 0; background: #f1ede6; width: 34px; height: 34px; border-radius: 50%; font-size: 22px; line-height: 1; cursor: pointer; color: var(--murekkep); }
+.zil-izin { background: var(--ana-acik); border-radius: 12px; padding: 12px; font-size: 14px; display: grid; gap: 10px; color: var(--murekkep); }
+.zil-izin.acik { background: #e2f5ea; }
+.zil-izin.uyari-ton { background: var(--vurgu-acik); }
+.zil-izin .btn { width: 100%; }
+.zil-izin-sira { display: flex; gap: 8px; }
+.zil-izin-sira .btn { flex: 1; }
+.zil-liste { display: grid; gap: 8px; }
+.zil-oge { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; padding: 10px 12px; border-radius: 12px; background: #faf8f4; border: 1px solid #f0ebe3; cursor: pointer; text-align: left; font: inherit; color: inherit; width: 100%; }
+.zil-oge:hover { border-color: var(--cizgi); }
+.zil-oge .kod-rozet { grid-row: span 2; align-self: center; font-size: 13px; }
+.zil-oge b { color: var(--murekkep); font-size: 15px; }
+.zil-oge small { color: var(--soluk); font-size: 13px; }
+.zil-bos { text-align: center; color: var(--soluk); font-size: 14px; padding: 8px 0; }
+.mb-kutu { text-align: left; }
+.mb-kutu h2, .mb-kutu > p { text-align: left; }
+.mb-kutu textarea { font-size: 15px; line-height: 1.45; }
+.s-sag { display: flex; gap: 6px; align-items: center; }
+.btn-wp-hafif { background: #e2f5ea; color: var(--wp-koyu); }
+.btn-wp-hafif:hover { background: #d0eedc; }
+
+/* ---------- Müşteri sitesi: arayın uyarısı ---------- */
+.uyari-kutu {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-bottom: 20px; border-radius: 14px;
+  background: var(--vurgu-acik); border: 1.5px solid #f0c98a; color: var(--murekkep);
+}
+.uyari-kutu .uyari-ikon { width: 42px; height: 42px; border-radius: 50%; background: var(--vurgu); color: #fff; display: grid; place-items: center; flex: none; }
+.uyari-kutu b { display: block; font-size: 16px; }
+.uyari-kutu span { display: block; font-size: 14px; color: #6b5a3e; }
+.uyari-kutu .btn { margin-left: auto; flex: none; }
+.secim-kart small em { font-style: normal; color: var(--vurgu); font-weight: 700; }
+
+@media (max-width: 720px) {
+  .zil-panel { top: 68px; left: 16px; right: 16px; width: auto; max-width: none; }
+  .uyari-kutu { flex-wrap: wrap; }
+  .uyari-kutu > div { flex: 1; min-width: 0; }
+  .uyari-kutu .btn { width: 100%; margin-left: 0; }
+  .s-sag { width: 100%; justify-content: space-between; }
+}
+
+/* ---------- Fiyat listeleri ---------- */
+.fiyat { margin-bottom: 22px; }
+.fiyat.ayrik { margin-bottom: 0; }
+.fiyat-ust { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 10px; }
+.fiyat-ust span { font-size: 13px; font-weight: 700; color: var(--ana); background: var(--ana-acik); padding: 3px 10px; border-radius: 99px; }
+.fiyat-liste { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+.fiyat-liste li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--cizgi); }
+.f-ad { font-weight: 600; color: var(--murekkep); }
+.f-fiyat { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.f-fiyat b { font-size: 17px; font-weight: 800; color: var(--murekkep); }
+.f-fiyat small { font-size: 13px; color: var(--soluk); }
+.f-fiyat s { font-size: 13px; color: var(--soluk); }
+[data-fiyat="dukkan"] .f-fiyat b { color: var(--ana); }
+
+/* ---------- Telefonlar ---------- */
+.tel-liste { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.tel-liste.satir { gap: 4px 14px; }
+.tel-liste.satir .dukkan-tel { font-size: 14px; font-weight: 600; color: var(--metin); }
+.ara-butonlar { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.ara-butonlar .btn { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- Admin: bildirim uyarı şeridi ---------- */
+.serit {
+  margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: 14px; background: var(--vurgu-acik); border: 1.5px solid var(--vurgu);
+}
+.serit-ikon { width: 40px; height: 40px; border-radius: 50%; background: var(--vurgu); color: #fff; display: grid; place-items: center; flex: none; }
+.serit-ikon svg { width: 20px; height: 20px; }
+.serit-metin { flex: 1; min-width: 200px; }
+.serit-metin b { display: block; color: #7a4a06; font-weight: 800; }
+.serit-metin span { display: block; font-size: 14px; color: #6b5a3e; margin-top: 2px; }
+.serit-butonlar { display: flex; gap: 8px; }
+.serit-kapat { background: none; border: 0; color: #7a4a06; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; padding: 8px; }
+
+@media (max-width: 720px) {
+  .fiyat-liste { grid-template-columns: 1fr; }
+  .uyari-kutu .ara-butonlar { flex: 1 1 100%; width: 100%; margin-left: 0; }
+  .ara-butonlar .btn { flex: 1 1 140px; }
+  .serit-butonlar { width: 100%; }
+  .serit-butonlar .btn { flex: 1; }
+}
+
+/* ---------- Logo ---------- */
+.marka-ikon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.giris { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.giris-logo { width: 100%; height: auto; border-radius: 20px; box-shadow: 0 2px 4px rgba(106, 9, 22, .12), 0 18px 40px rgba(106, 9, 22, .18); display: block; }
+@media (max-width: 860px) {
+  .giris { grid-template-columns: 1fr; gap: 20px; }
+  .giris-logo { order: -1; border-radius: 16px; }
 }

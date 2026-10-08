@@ -3,10 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Pendik Halı Yıkama · Online Randevu</title>
-  <meta name="description" content="Pendik halı yıkama: online randevu alın, halınızı adresinizden alalım ya da dükkanımıza bırakın. Teslimat kodunuzla durumunu takip edin.">
-  <meta name="theme-color" content="#f5f1ea">
-  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <title>Tek Halı Yıkama · Kalitenin Adresi · Pendik</title>
+  <meta name="description" content="Tek Halı Yıkama, Pendik: online randevu alın, halınızı adresinizden alalım ya da dükkanımıza bırakın. Teslimat kodunuzla durumunu takip edin.">
+  <meta name="theme-color" content="#6a0916">
+  <link rel="icon" href="assets/favicon-48.png" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Tek Halı">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,8 +31,8 @@
   <header class="ust">
     <div class="kap ust-ic">
       <a class="marka" href="./">
-        <span class="marka-ikon" aria-hidden="true"><svg><use href="#i-hali"/></svg></span>
-        <span><b data-dukkan="ad">Pendik Halı Yıkama</b><small>Pendik · İstanbul</small></span>
+        <span class="marka-ikon" aria-hidden="true"><img src="assets/logo-tac.png" alt="" width="38" height="38"></span>
+        <span><b data-dukkan="ad">Tek Halı Yıkama</b><small data-dukkan="slogan">Kalitenin Adresi</small></span>
       </a>
       <a class="btn btn-hafif btn-kucuk" data-tel-link href="tel:+905546291776"><svg class="ik"><use href="#i-tel"/></svg>Ara</a>
     </div>
@@ -37,9 +40,12 @@
 
   <main>
     <section class="kap giris">
-      <span class="etiket">Halı · Kilim · Yolluk</span>
-      <h1>Halınızı biz alalım, <em>tertemiz</em> geri getirelim.</h1>
-      <p class="giris-alt">Randevunuzu iki dakikada oluşturun. Size özel teslimat kodunuzla halınızın hangi aşamada olduğunu her an görün.</p>
+      <div class="giris-metin">
+        <span class="etiket">Pendik · Halı · Yorgan · Koltuk</span>
+        <h1>Halınızı biz alalım, <em>tertemiz</em> geri getirelim.</h1>
+        <p class="giris-alt">Randevunuzu iki dakikada oluşturun. Size özel teslimat kodunuzla halınızın hangi aşamada olduğunu her an görün.</p>
+      </div>
+      <img class="giris-logo" src="assets/logo-afis.jpg" alt="Tek Halı Yıkama — Kalitenin Adresi" width="1200" height="655" fetchpriority="high">
     </section>
 
     <section class="kap" id="baslat">
@@ -50,7 +56,7 @@
         </button>
         <button class="secim-kart" role="tab" aria-selected="false" aria-controls="panel-dukkan" data-sekme="dukkan">
           <span class="secim-ikon"><svg><use href="#i-dukkan"/></svg></span>
-          <span><b>Kendim Bırakacağım</b><small>Dükkanımıza getirin</small></span>
+          <span><b>Kendim Bırakacağım</b><small>Dükkanımıza getirin · <em>önce arayın</em></small></span>
         </button>
       </div>
 
@@ -59,6 +65,10 @@
           <h2>Adresten alım randevusu</h2>
           <p>Bilgilerinizi yazın, size uygun günü ve saati seçin.</p>
         </div>
+        <section class="fiyat" data-fiyat="randevu" aria-labelledby="fiyat-randevu-baslik">
+          <div class="fiyat-ust"><h3 id="fiyat-randevu-baslik">Fiyat listesi</h3><span>Adresten alım ve teslim dahil</span></div>
+          <ul class="fiyat-liste"></ul>
+        </section>
         <form id="form-randevu" novalidate>
           <input type="hidden" name="tur" value="adres">
           <div class="alanlar">
@@ -88,14 +98,19 @@
       </div>
 
       <div class="panel" id="panel-dukkan" role="tabpanel" hidden>
+        <div class="uyari-kutu" role="note">
+          <span class="uyari-ikon"><svg class="ik"><use href="#i-tel"/></svg></span>
+          <div><b>Gelmeden önce mutlaka bizi arayınız.</b><span>Dükkanda olduğumuzdan emin olmak için lütfen önceden haber verin.</span></div>
+          <div class="ara-butonlar" data-ara-butonlar></div>
+        </div>
         <div class="dukkan">
           <div class="dukkan-bilgi">
             <div>
               <h2>Dükkanımız</h2>
-              <p class="giris-alt" style="margin-top:4px;font-size:15px">Çalışma saatlerimizde halınızı dükkana getirebilirsiniz.</p>
+              <p class="giris-alt" style="margin-top:4px;font-size:15px">Halınızı dükkana getirmeden önce lütfen arayarak haber verin.</p>
             </div>
             <p class="dukkan-adres" data-dukkan="adres">Doğu Mahallesi, Hatboyu Caddesi, No: 94/C, Pendik / İstanbul</p>
-            <a class="dukkan-tel" data-tel-link href="tel:+905546291776"><svg class="ik"><use href="#i-tel"/></svg><span data-dukkan="telefon">+90 554 629 17 76</span></a>
+            <div class="tel-liste" data-tel-liste></div>
             <div class="buton-sira">
               <a class="btn btn-ana" data-harita-link target="_blank" rel="noopener"><svg class="ik"><use href="#i-harita"/></svg>Haritada Aç</a>
               <a class="btn btn-hafif" data-tarif-link target="_blank" rel="noopener"><svg class="ik"><use href="#i-yon"/></svg>Yol Tarifi</a>
@@ -103,6 +118,11 @@
           </div>
           <div class="harita"><iframe data-harita-embed title="Dükkan konumu" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
         </div>
+
+        <section class="fiyat ayrik" data-fiyat="dukkan" aria-labelledby="fiyat-dukkan-baslik">
+          <div class="fiyat-ust"><h3 id="fiyat-dukkan-baslik">Dükkana getirene özel fiyatlar</h3><span>Kendiniz getirip aldığınızda</span></div>
+          <ul class="fiyat-liste"></ul>
+        </section>
 
         <form id="form-dukkan" class="ayrik" novalidate>
           <h3>Getirmeden önce teslimat kodu alın</h3>
@@ -143,8 +163,8 @@
 
   <footer class="alt">
     <div class="kap alt-ic">
-      <span><b data-dukkan="ad">Pendik Halı Yıkama</b> · <span data-dukkan="adres">Doğu Mahallesi, Hatboyu Caddesi, No: 94/C, Pendik / İstanbul</span></span>
-      <a data-tel-link href="tel:+905546291776" data-dukkan="telefon">+90 554 629 17 76</a>
+      <span><b data-dukkan="ad">Tek Halı Yıkama</b> · <span data-dukkan="adres">Doğu Mahallesi, Hatboyu Caddesi, No: 94/C, Pendik / İstanbul</span></span>
+      <span class="tel-liste satir" data-tel-liste></span>
     </div>
   </footer>
 
