@@ -133,6 +133,7 @@
     $("#s-aktif").textContent = aktif.length;
     $("#s-gecmis").textContent = gecmis.length;
     const yeniSayi = aktif.filter((k) => k.olusturma > esik).length;
+    window.Rozet?.ayarla("admin", yeniSayi);
     document.title = (yeniSayi ? `(${yeniSayi}) ` : "") + "Yönetim Paneli · " + D.ad;
     $("#zil-sayi").textContent = yeniSayi > 99 ? "99+" : yeniSayi;
     $("#zil-sayi").hidden = !yeniSayi;

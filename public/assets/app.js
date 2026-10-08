@@ -115,6 +115,7 @@
       const veri = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(veri.hata || "Bir sorun oluştu, lütfen tekrar deneyin.");
       try { localStorage.setItem("sonKod", JSON.stringify({ kod: veri.kod, tel4: v.telefon.replace(/\D/g, "").slice(-4) })); } catch {}
+      kodEkle(veri.kod, v.telefon.replace(/\D/g, "").slice(-4));
       sonucGoster(v, veri.kod, kanal);
       form.reset();
       sonKoduGoster();
@@ -236,6 +237,7 @@
       const ust = v.tur === "adres" && v.tarih ? `<p style="color:var(--soluk)">Alım: ${tarihYaz(v.tarih)}, ${v.saat}</p>` : "";
       sorguSonuc.innerHTML = `<h3>Kod ${v.kod}: ${v.durumEtiket}</h3>${ust}<ol class="adimlar-zaman">${satir}</ol><div class="bildirim-kutu" hidden></div>`;
       if (v.durum !== "teslim_edildi") bildirimKutusu($(".bildirim-kutu", sorguSonuc), v.kod, tel4);
+      kodEkle(v.kod, tel4);
     } catch (err) {
       if (sessiz) return;
       sorguSonuc.classList.add("hatali");
@@ -329,4 +331,119 @@
       }
     });
   }
+
+  // ---- Bildirimlerim (uygulama içi gelen kutusu) ----
+  // Bu telefonda alınan/sorgulanan kodlar saklanır; durum geçmişleri sunucudan çekilip bildirim olarak listelenir.
+  function kodlarim() {
+    try { return JSON.parse(localStorage.getItem("kodlarim")) || []; } catch { return []; }
+  }
+  function kodlarimKaydet(liste) {
+    try { localStorage.setItem("kodlarim", JSON.stringify(liste.slice(-10))); } catch {}
+  }
+  function kodEkle(kod, tel4) {
+    if (!kod || !tel4) return;
+    const liste = kodlarim().filter((x) => x.kod !== kod);
+    liste.push({ kod, tel4 });
+    kodlarimKaydet(liste);
+    setTimeout(bildirimleriYukle, 500);
+  }
+  // Önceki sürümden kalan son kodu listeye taşı
+  if (!kodlarim().length) {
+    try { const s = JSON.parse(localStorage.getItem("sonKod")); if (s?.kod && s?.tel4) kodlarimKaydet([s]); } catch {}
+  }
+
+  const MESAJLAR = {
+    teslim_alindi: () => ["Halınızı teslim aldık 🧺", "Dükkanımıza ulaştı, yıkama sırasına alındı."],
+    yikaniyor: () => ["Halınız yıkanıyor 🫧", "Yıkaması başladı, bitince haber vereceğiz."],
+    hazir: (tur) => ["Halınız teslime hazır ✨", tur === "adres" ? "Tertemiz oldu. Teslimat için sizinle iletişime geçeceğiz." : "Tertemiz oldu. Dükkanımızdan alabilirsiniz, gelmeden önce arayın."],
+    teslim_edildi: () => ["Halınız teslim edildi 🙏", "Bizi tercih ettiğiniz için teşekkür ederiz."],
+  };
+  const mZil = $("#m-zil");
+  const mPanel = $("#m-zil-panel");
+  let mBildirimler = [];
+  let vurguEsik = null; // panel açıkken, açılmadan önce okunmamış olanlar vurgulu kalsın
+  const okunduZamani = () => { try { return localStorage.getItem("bildirimOkundu") || ""; } catch { return ""; } };
+  const okunmamisSayisi = () => mBildirimler.filter((b) => b.zaman > okunduZamani()).length;
+
+  async function bildirimleriYukle() {
+    const kodlar = kodlarim();
+    const sonuclar = await Promise.all(kodlar.map(async ({ kod, tel4 }) => {
+      try {
+        const r = await fetch(`/api/sorgula?kod=${encodeURIComponent(kod)}&tel4=${encodeURIComponent(tel4)}`);
+        if (r.status === 404) return { silindi: kod };
+        return r.ok ? await r.json() : null;
+      } catch { return null; }
+    }));
+    const silinen = sonuclar.filter((x) => x?.silindi).map((x) => x.silindi);
+    if (silinen.length) kodlarimKaydet(kodlar.filter((k) => !silinen.includes(k.kod)));
+    mBildirimler = sonuclar
+      .filter((v) => v && !v.silindi)
+      .flatMap((v) => (v.gecmis || []).filter((g) => MESAJLAR[g.durum]).map((g) => ({ kod: v.kod, tur: v.tur, durum: g.durum, zaman: g.zaman })))
+      .sort((a, b) => b.zaman.localeCompare(a.zaman))
+      .slice(0, 30);
+    mZilCiz();
+    if (!mPanel.hidden) mPanelCiz(false);
+  }
+
+  function mZilCiz() {
+    const n = okunmamisSayisi();
+    const sayi = $("#m-zil-sayi");
+    sayi.textContent = n > 9 ? "9+" : n;
+    sayi.hidden = !n;
+    mZil.setAttribute("aria-label", n ? `Bildirimler (${n} okunmamış)` : "Bildirimler");
+    window.Rozet?.ayarla("musteri", n);
+  }
+
+  function mPanelCiz(okunduYap) {
+    const okundu = vurguEsik ?? okunduZamani();
+    $("#m-zil-liste").innerHTML = mBildirimler.length
+      ? mBildirimler.map((b) => {
+          const [baslik, metin] = MESAJLAR[b.durum](b.tur);
+          return `<button type="button" class="zil-oge${b.zaman > okundu ? " okunmamis" : ""}" data-kod="${b.kod}">
+            <span class="kod-rozet">${b.kod}</span><b>${baslik}</b><small>${metin} · ${zamanYaz(b.zaman)}</small></button>`;
+        }).join("")
+      : `<p class="zil-bos">${kodlarim().length ? "Henüz bildirim yok. Halınız teslim alındığında, yıkanırken ve hazır olduğunda burada görünecek." : "Randevu aldığınızda halınızın durum bildirimleri burada görünür."}</p>`;
+    const son = kodlarim().slice(-1)[0];
+    if (son) bildirimKutusu($("#m-zil-izin"), son.kod, son.tel4);
+    else $("#m-zil-izin").hidden = true;
+    if (okunduYap && mBildirimler.length) {
+      try { localStorage.setItem("bildirimOkundu", new Date().toISOString()); } catch {}
+      setTimeout(mZilCiz, 400);
+      // Bildirim çubuğundaki durum bildirimlerini temizle
+      if (pushDestek) navigator.serviceWorker.getRegistration("/").then((reg) => reg?.getNotifications()).then((liste) => (liste || []).forEach((n) => n.data?.tip === "durum" && n.close())).catch(() => {});
+    }
+  }
+
+  function mPanelAc() {
+    vurguEsik = okunduZamani();
+    mPanel.hidden = false;
+    mZil.setAttribute("aria-expanded", "true");
+    mPanelCiz(true);
+    bildirimleriYukle();
+  }
+  function mPanelKapat() {
+    mPanel.hidden = true;
+    vurguEsik = null;
+    mZil.setAttribute("aria-expanded", "false");
+    $$(".zil-oge.okunmamis", mPanel).forEach((el) => el.classList.remove("okunmamis"));
+  }
+  mZil.addEventListener("click", () => (mPanel.hidden ? mPanelAc() : mPanelKapat()));
+  $("#m-zil-kapat").addEventListener("click", mPanelKapat);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !mPanel.hidden) mPanelKapat(); });
+  document.addEventListener("click", (e) => { if (!mPanel.hidden && !mPanel.contains(e.target) && !mZil.contains(e.target)) mPanelKapat(); });
+  $("#m-zil-liste").addEventListener("click", (e) => {
+    const oge = e.target.closest("[data-kod]");
+    if (!oge) return;
+    const k = kodlarim().find((x) => x.kod === oge.dataset.kod);
+    mPanelKapat();
+    sorguForm.kod.value = oge.dataset.kod;
+    sorguForm.tel4.value = k?.tel4 || "";
+    sorguForm.requestSubmit();
+    $("#sorgula").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  bildirimleriYukle();
+  setInterval(() => document.visibilityState === "visible" && bildirimleriYukle(), 60000);
+  document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && bildirimleriYukle());
+  if (pushDestek) navigator.serviceWorker.addEventListener("message", (e) => { if (e.data?.tip === "durum") bildirimleriYukle(); });
 })();

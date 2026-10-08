@@ -426,9 +426,14 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
 .rozet.r-bildirim-acik { background: #e2f5ea; color: #146c3a; }
 .rozet.r-bildirim-kapali { background: #eef0f2; color: #7b8790; }
 .zil { position: relative; }
-.zil::after {
+.zil.zil-acik::after, .zil.zil-kapali::after {
   content: ""; position: absolute; left: 7px; bottom: 7px; width: 9px; height: 9px; border-radius: 50%;
-  border: 2px solid #fff; background: transparent;
+  border: 2px solid #fff;
 }
 .zil.zil-acik::after { background: #1f9e55; }
 .zil.zil-kapali::after { background: var(--vurgu); }
+
+/* ---------- Müşteri: bildirimlerim ---------- */
+.zil-oge.okunmamis { background: var(--ana-acik); border-color: #ecc9c6; }
+.zil-oge.okunmamis b::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--hata); margin-right: 6px; vertical-align: 2px; }
+#m-zil-panel .bildirim-kutu { margin-top: 0; }

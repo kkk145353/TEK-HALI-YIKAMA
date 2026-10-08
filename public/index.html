@@ -35,9 +35,18 @@
         <span class="marka-ikon" aria-hidden="true"><img src="assets/logo-tac.png" alt="" width="38" height="38"></span>
         <span><b data-dukkan="ad">Tek Halı Yıkama</b><small data-dukkan="slogan">Kalitenin Adresi</small></span>
       </a>
-      <a class="btn btn-hafif btn-kucuk" data-tel-link href="tel:+905546291776"><svg class="ik"><use href="#i-tel"/></svg>Ara</a>
+      <div class="buton-sira" style="flex-wrap:nowrap">
+        <button class="btn btn-hafif btn-kucuk zil" id="m-zil" type="button" aria-label="Bildirimler" aria-expanded="false" aria-controls="m-zil-panel"><svg class="ik"><use href="#i-zil"/></svg><span class="zil-sayi" id="m-zil-sayi" hidden>0</span></button>
+        <a class="btn btn-hafif btn-kucuk" data-tel-link href="tel:+905546291776"><svg class="ik"><use href="#i-tel"/></svg>Ara</a>
+      </div>
     </div>
   </header>
+
+  <div class="zil-panel" id="m-zil-panel" role="dialog" aria-labelledby="m-zil-baslik" hidden>
+    <div class="zil-baslik"><h3 id="m-zil-baslik">Bildirimlerim</h3><button type="button" class="kapat-x" id="m-zil-kapat" aria-label="Kapat">×</button></div>
+    <div class="bildirim-kutu" id="m-zil-izin" hidden></div>
+    <div class="zil-liste" id="m-zil-liste"></div>
+  </div>
 
   <main>
     <section class="kap giris">
@@ -188,6 +197,7 @@
     </div>
   </div>
 
+  <script src="assets/rozet.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>
