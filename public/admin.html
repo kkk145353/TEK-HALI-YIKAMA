@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Yönetim Paneli · Halı Yıkama</title>
+  <meta name="theme-color" content="#f5f1ea">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/config.js"></script>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-hali" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5" fill="none" stroke="#f5f1ea" stroke-width="1.6"/><rect x="7.5" y="6.5" width="9" height="11" rx=".5" fill="none" stroke="#d9922e" stroke-width="1.6"/><path d="M12 9.5l2 2.5-2 2.5-2-2.5z" fill="#d9922e"/><path d="M6 1.5v1.5M9 1.5v1.5M12 1.5v1.5M15 1.5v1.5M18 1.5v1.5M6 21v1.5M9 21v1.5M12 21v1.5M15 21v1.5M18 21v1.5" stroke="#f5f1ea" stroke-width="1.3" stroke-linecap="round"/></symbol>
+    <symbol id="i-yenile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></symbol>
+    <symbol id="i-cikis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></symbol>
+  </svg>
+
+  <div id="giris" class="giris-ekran">
+    <form id="form-giris" class="giris-kutu" novalidate>
+      <div class="marka">
+        <span class="marka-ikon" aria-hidden="true"><svg><use href="#i-hali"/></svg></span>
+        <span><b data-dukkan="ad">Halı Yıkama</b><small>Yönetim Paneli</small></span>
+      </div>
+      <label class="alan"><span>Şifre</span><input type="password" name="sifre" autocomplete="current-password" required autofocus></label>
+      <p class="form-hata" role="alert" hidden></p>
+      <button class="btn btn-ana" type="submit">Giriş Yap</button>
+    </form>
+  </div>
+
+  <div id="panel" hidden>
+    <header class="ust">
+      <div class="kap ust-ic">
+        <a class="marka" href="admin">
+          <span class="marka-ikon" aria-hidden="true"><svg><use href="#i-hali"/></svg></span>
+          <span><b data-dukkan="ad">Halı Yıkama</b><small id="guncelleme">Yönetim Paneli</small></span>
+        </a>
+        <div class="buton-sira ust-butonlar" style="flex-wrap:nowrap">
+          <button class="btn btn-hafif btn-kucuk" id="yenile" type="button" aria-label="Yenile"><svg class="ik"><use href="#i-yenile"/></svg><span class="metin">Yenile</span></button>
+          <button class="btn btn-hafif btn-kucuk" id="cikis" type="button" aria-label="Çıkış"><svg class="ik"><use href="#i-cikis"/></svg><span class="metin">Çıkış</span></button>
+        </div>
+      </div>
+    </header>
+
+    <main class="kap" style="padding-bottom:60px">
+      <div class="ozet">
+        <div class="ozet-kart"><small>Alınacak / gelecek</small><b id="o-yeni">0</b></div>
+        <div class="ozet-kart"><small>İşlemde</small><b id="o-islem">0</b></div>
+        <div class="ozet-kart"><small>Teslime hazır</small><b id="o-hazir">0</b></div>
+        <div class="ozet-kart"><small>Bugün teslim edilen</small><b id="o-bugun">0</b></div>
+      </div>
+
+      <div class="kod-kutu">
+        <label for="kod-ara">Teslimat kodu ile bul</label>
+        <form class="kod-form" id="form-kod" novalidate>
+          <input id="kod-ara" name="kod" maxlength="6" placeholder="Müşterinin söylediği 6 haneli kod" autocapitalize="characters" autocomplete="off" spellcheck="false">
+          <button class="btn" type="submit">Bul</button>
+        </form>
+        <div class="kod-sonuc" id="kod-sonuc"></div>
+      </div>
+
+      <div class="arac">
+        <div class="sekmeler" role="tablist">
+          <button class="aktif" data-sekme="aktif" role="tab">Aktif Siparişler <span class="sayi" id="s-aktif">0</span></button>
+          <button data-sekme="gecmis" role="tab">Geçmiş Siparişler <span class="sayi" id="s-gecmis" style="background:#8a96a0">0</span></button>
+        </div>
+        <input class="ara" id="ara" type="search" placeholder="İsim, telefon, adres veya kod ara…" aria-label="Ara">
+        <select id="filtre" aria-label="Filtre">
+          <option value="">Tümü</option>
+          <option value="adres">Adresten alınacak</option>
+          <option value="dukkan">Dükkana getirecek</option>
+        </select>
+      </div>
+
+      <div id="liste" class="liste"></div>
+    </main>
+  </div>
+
+  <script src="assets/admin.js"></script>
+</body>
+</html>
