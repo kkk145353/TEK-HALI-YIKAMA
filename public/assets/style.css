@@ -404,3 +404,31 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
   .giris { grid-template-columns: 1fr; gap: 20px; }
   .giris-logo { order: -1; border-radius: 16px; }
 }
+
+/* ---------- Müşteri: durum bildirimi kutusu ---------- */
+.bildirim-kutu {
+  display: flex; gap: 12px; align-items: flex-start; text-align: left; margin-top: 16px;
+  padding: 14px; border-radius: 14px; background: var(--vurgu-acik); border: 1.5px solid #ead7ae;
+}
+.bildirim-kutu > div { flex: 1; min-width: 0; }
+.bildirim-kutu b { display: block; color: var(--murekkep); font-size: 15px; }
+.bildirim-kutu span { display: block; font-size: 14px; color: var(--soluk); line-height: 1.45; margin-top: 2px; }
+.bildirim-kutu span b { display: inline; font-size: inherit; }
+.bildirim-kutu .btn { margin-top: 10px; width: 100%; }
+.bk-ikon { width: 36px; height: 36px; border-radius: 50%; background: var(--vurgu); color: #fff; display: grid !important; place-items: center; flex: none; margin: 0 !important; }
+.bk-ikon svg { width: 18px; height: 18px; }
+.bildirim-kutu.bk-acik { background: #e6f4ea; border-color: #b9dfc5; }
+.bildirim-kutu.bk-acik .bk-ikon { background: var(--wp); }
+.bildirim-kutu.bk-acik b { color: #146c3a; }
+.bildirim-kutu.bk-kapali .bk-ikon { background: #9aa5ae; }
+
+/* ---------- Admin: bildirim göstergeleri ---------- */
+.rozet.r-bildirim-acik { background: #e2f5ea; color: #146c3a; }
+.rozet.r-bildirim-kapali { background: #eef0f2; color: #7b8790; }
+.zil { position: relative; }
+.zil::after {
+  content: ""; position: absolute; left: 7px; bottom: 7px; width: 9px; height: 9px; border-radius: 50%;
+  border: 2px solid #fff; background: transparent;
+}
+.zil.zil-acik::after { background: #1f9e55; }
+.zil.zil-kapali::after { background: var(--vurgu); }

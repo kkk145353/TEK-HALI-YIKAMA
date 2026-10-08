@@ -1,4 +1,4 @@
-// Yönetim paneli bildirimleri
+// Bildirimler: dükkan sahibine "yeni randevu", müşteriye "halının durumu"
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 
@@ -13,20 +13,26 @@ self.addEventListener("push", (e) => {
       tag: d.kod || "randevu",
       renotify: true,
       vibrate: [200, 100, 200],
-      data: { url: d.url || "/admin" },
+      data: { url: d.url || "/admin", tip: d.tip || "yeni-randevu" },
     });
     const pencereler = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-    pencereler.forEach((p) => p.postMessage({ tip: "yeni-randevu", kod: d.kod }));
+    pencereler.forEach((p) => p.postMessage({ tip: d.tip || "yeni-randevu", kod: d.kod }));
   })());
 });
 
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
   const url = (e.notification.data && e.notification.data.url) || "/admin";
+  const panelMi = url.startsWith("/admin");
   e.waitUntil((async () => {
     const pencereler = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const p of pencereler) {
-      if (p.url.includes("/admin")) { await p.focus(); return; }
+      const yol = new URL(p.url).pathname;
+      if (panelMi ? yol.startsWith("/admin") : !yol.startsWith("/admin")) {
+        await p.focus();
+        if (!panelMi && "navigate" in p) await p.navigate(url).catch(() => {});
+        return;
+      }
     }
     await self.clients.openWindow(url);
   })());

@@ -148,6 +148,7 @@
       ? `${tarihYaz(v.tarih)}, ${v.saat} arasında adresinizden alınacak.`
       : `Halınızı ${D.adres} adresine bırakabilirsiniz. Gelmeden önce lütfen mutlaka arayın: ${telefonlar.join(" / ")}`;
     $("#kopyala").textContent = "Kodu kopyala";
+    bildirimKutusu($("#sonuc-bildirim"), kod, v.telefon.replace(/\D/g, "").slice(-4));
     sonuc.hidden = false;
     document.body.style.overflow = "hidden";
     (kanal === "whatsapp" ? wpBtn : $("#sonuc-kapat")).focus();
@@ -208,6 +209,7 @@
 
   sorguForm.kod.addEventListener("input", (e) => (e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")));
   sorguForm.tel4.addEventListener("input", (e) => (e.target.value = e.target.value.replace(/\D/g, "")));
+  let sessiz = false;
   sorguForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const kod = sorguForm.kod.value.trim();
@@ -232,10 +234,99 @@
         return `<li class="${cls}"><span class="nokta">${i <= simdiki ? '<svg class="ik" style="width:16px;height:16px"><use href="#i-tik"/></svg>' : ""}</span><span><b>${ad}</b>${z}</span></li>`;
       }).join("");
       const ust = v.tur === "adres" && v.tarih ? `<p style="color:var(--soluk)">Alım: ${tarihYaz(v.tarih)}, ${v.saat}</p>` : "";
-      sorguSonuc.innerHTML = `<h3>Kod ${v.kod}: ${v.durumEtiket}</h3>${ust}<ol class="adimlar-zaman">${satir}</ol>`;
+      sorguSonuc.innerHTML = `<h3>Kod ${v.kod}: ${v.durumEtiket}</h3>${ust}<ol class="adimlar-zaman">${satir}</ol><div class="bildirim-kutu" hidden></div>`;
+      if (v.durum !== "teslim_edildi") bildirimKutusu($(".bildirim-kutu", sorguSonuc), v.kod, tel4);
     } catch (err) {
+      if (sessiz) return;
       sorguSonuc.classList.add("hatali");
       sorguSonuc.textContent = err.message === "Failed to fetch" ? "Bağlantı kurulamadı." : err.message;
     }
   });
+
+  // ---- Müşteriye telefon bildirimi (halının durumu değişince) ----
+  const pushDestek = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  const iosMu = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const anaEkranda = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const b64 = (s) => {
+    const p = "=".repeat((4 - (s.length % 4)) % 4);
+    return Uint8Array.from(atob((s + p).replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+  };
+  const acikKodlar = () => { try { return JSON.parse(localStorage.getItem("bildirimKodlar")) || []; } catch { return []; } };
+  const acikKodKaydet = (kodlar) => { try { localStorage.setItem("bildirimKodlar", JSON.stringify(kodlar)); } catch {} };
+  async function mevcutAbonelik() {
+    if (!pushDestek) return null;
+    const reg = await navigator.serviceWorker.getRegistration("/");
+    return reg ? reg.pushManager.getSubscription() : null;
+  }
+  async function bildirimAcikMi(kod) {
+    if (!pushDestek || Notification.permission !== "granted" || !acikKodlar().includes(kod)) return false;
+    return !!(await mevcutAbonelik().catch(() => null));
+  }
+  const zilIkon = '<svg class="ik"><use href="#i-zil"/></svg>';
+
+  async function bildirimKutusu(kutu, kod, tel4) {
+    if (!kutu) return;
+    kutu.className = "bildirim-kutu";
+    if (!pushDestek) {
+      if (iosMu && !anaEkranda) {
+        kutu.innerHTML = `<span class="bk-ikon">${zilIkon}</span><div><b>Durum bildirimi almak ister misiniz?</b><span>iPhone'da önce Safari'de <b>Paylaş → Ana Ekrana Ekle</b> yapın, siteyi ana ekrandaki simgeden açıp kodunuzu sorgulayın.</span></div>`;
+        kutu.hidden = false;
+      } else kutu.hidden = true;
+      return;
+    }
+    if (Notification.permission === "denied") {
+      kutu.classList.add("bk-kapali");
+      kutu.innerHTML = `<span class="bk-ikon">${zilIkon}</span><div><b>Bildirimler kapalı</b><span>Bu telefonda bildirimler engellenmiş. Tarayıcı ayarlarından bu site için bildirimlere izin verebilirsiniz.</span></div>`;
+      kutu.hidden = false;
+      return;
+    }
+    if (await bildirimAcikMi(kod)) {
+      kutu.classList.add("bk-acik");
+      kutu.innerHTML = `<span class="bk-ikon">${zilIkon}</span><div><b>✓ Bildirimler açık</b><span>Halınız teslim alındığında, yıkanırken ve hazır olduğunda bu telefona bildirim gelecek.</span></div>`;
+      kutu.hidden = false;
+      return;
+    }
+    kutu.innerHTML = `<span class="bk-ikon">${zilIkon}</span><div><b>Halınızın durumunu bildirimle öğrenin</b><span>Teslim alındı, yıkanıyor, hazır… Her adımda telefonunuza bildirim gelsin.</span>
+      <button type="button" class="btn btn-ana btn-kucuk bk-ac">🔔 Bildirimleri Aç</button></div>`;
+    kutu.hidden = false;
+    $(".bk-ac", kutu).addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      btn.textContent = "Açılıyor…";
+      try {
+        const izin = await Notification.requestPermission();
+        if (izin !== "granted") throw new Error("Bildirim izni verilmedi.");
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          const r = await fetch("/api/bildirim/anahtar");
+          const { anahtar } = await r.json();
+          sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(anahtar) });
+        }
+        const r = await fetch("/api/bildirim/abone", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ kod, tel4, abonelik: sub.toJSON() }),
+        });
+        const v = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(v.hata || "Bildirim açılamadı.");
+        acikKodKaydet([...new Set([...acikKodlar(), kod])].slice(-20));
+      } catch (err) {
+        alert(err.message === "Failed to fetch" ? "Bağlantı kurulamadı." : err.message);
+      }
+      bildirimKutusu(kutu, kod, tel4);
+    });
+  }
+
+  // Bildirim gelince sayfa açıksa durumu tazele
+  if (pushDestek) {
+    navigator.serviceWorker.addEventListener("message", (e) => {
+      if (e.data?.tip === "durum" && !sorguSonuc.hidden && sorguForm.kod.value === e.data.kod) {
+        sessiz = true;
+        sorguForm.requestSubmit();
+        setTimeout(() => (sessiz = false), 3000);
+      }
+    });
+  }
 })();

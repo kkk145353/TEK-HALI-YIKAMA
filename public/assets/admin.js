@@ -21,6 +21,7 @@
   let sifre = "";
   try { sifre = localStorage.getItem("adminSifre") || ""; } catch {}
   let kayitlar = [];
+  let bildirimli = new Set(); // uygulama bildirimi açık olan müşteri kodları
   let sekme = "aktif";
   let vurgulu = null;
   let esik = null; // bu tarihten sonra gelenler "YENİ" sayılır (zil rozeti)
@@ -97,6 +98,7 @@
     try {
       const v = await api("liste");
       kayitlar = v.kayitlar;
+      bildirimli = new Set(v.bildirimli || []);
       const kodlar = new Set(kayitlar.map((k) => k.kod));
       if (bilinenKodlar) {
         const yeni = kayitlar.filter((k) => !bilinenKodlar.has(k.kod));
@@ -166,6 +168,9 @@
       k.kanal === "whatsapp" ? '<span class="rozet r-wp">WhatsApp</span>' : '<span class="rozet">Site</span>',
       k.durum === "yeni" && k.tarih === bugun ? '<span class="rozet r-bugun">Bugün</span>' : "",
       k.durum !== "teslim_edildi" && k.olusturma > esik ? '<span class="rozet r-yeni">YENİ</span>' : "",
+      k.durum === "teslim_edildi" ? "" : bildirimli.has(k.kod)
+        ? '<span class="rozet r-bildirim-acik" title="Durum değişince müşterinin telefonuna otomatik bildirim gider">🔔 Bildirim açık</span>'
+        : '<span class="rozet r-bildirim-kapali" title="Müşteri uygulama bildirimini açmamış; WhatsApp ile haber verebilirsiniz">🔕 Bildirim kapalı</span>',
     ].join("");
     const satirlar = [
       ["Telefon", `<span class="tel-sira"><a href="tel:+${esc(telRakam)}">${esc(k.telefon)}</a><a href="https://wa.me/${esc(telRakam)}" target="_blank" rel="noopener" style="color:var(--wp)">WhatsApp</a></span>`],
@@ -205,9 +210,17 @@
         const v = await api("durum", { kod: k.kod, durum: b.dataset.durum });
         Object.assign(k, v.kayit);
         if (!v.kayit.teslimEdildi) delete k.teslimEdildi;
-        bildir(`${k.kod}: ${ETIKET[k.durum]}${k.durum === "teslim_edildi" ? " — geçmişe taşındı" : ""}`);
-        ciz();
-        musteriBildirAc(k, true);
+        const tasindi = k.durum === "teslim_edildi" ? " — geçmişe taşındı" : "";
+        if (v.musteriBildirim > 0) {
+          bildirimli.add(k.kod);
+          ciz();
+          bildir(`✓ ${k.kod}: ${ETIKET[k.durum]} — müşterinin telefonuna bildirim gitti${tasindi}`);
+        } else {
+          const eskidenAcikti = bildirimli.delete(k.kod);
+          ciz();
+          bildir(`${k.kod}: ${ETIKET[k.durum]}${tasindi}`);
+          if (k.durum !== "yeni") musteriBildirAc(k, true, eskidenAcikti ? "Uygulama bildirimi ulaşmadı" : "Müşterinin uygulama bildirimi kapalı");
+        }
       } catch (err) {
         bildir(err.message);
         kartEl.classList.remove("yukleniyor");
@@ -294,10 +307,10 @@
   const mb = $("#mb");
   let mbKayit = null;
   function mbLink() { $("#mb-gonder").href = `https://wa.me/${waNumara(mbKayit)}?text=${encodeURIComponent($("#mb-metin").value)}`; }
-  function musteriBildirAc(k, durumDegisti) {
+  function musteriBildirAc(k, durumDegisti, neden) {
     mbKayit = k;
-    $("#mb-baslik").textContent = durumDegisti ? "Müşteriye bildirilsin mi?" : "Müşteriye durum bildir";
-    $("#mb-alt").textContent = `${k.ad} · ${k.telefon} · Durum: ${ETIKET[k.durum]}`;
+    $("#mb-baslik").textContent = durumDegisti ? "WhatsApp'tan bildirilsin mi?" : "Müşteriye durum bildir";
+    $("#mb-alt").textContent = (neden ? `🔕 ${neden}. ` : "") + `${k.ad} · ${k.telefon} · Durum: ${ETIKET[k.durum]}`;
     $("#mb-metin").value = musteriMesaji(k);
     mbLink();
     mb.hidden = false;
@@ -378,6 +391,11 @@
     if (!pushDestek) durum = iosMu && !anaEkranda ? "ios" : "destek-yok";
     else if (Notification.permission === "denied") durum = "engelli";
     else if (Notification.permission === "granted" && (await mevcutAbonelik().catch(() => null))) durum = "acik";
+    const zil = $("#zil");
+    zil.classList.toggle("zil-acik", durum === "acik");
+    zil.classList.toggle("zil-kapali", durum !== "acik");
+    zil.title = durum === "acik" ? "Bildirimler bu cihazda açık" : "Bildirimler bu cihazda kapalı";
+    zil.setAttribute("aria-label", "Bildirimler (" + (durum === "acik" ? "açık" : "kapalı") + ")");
     if (durum === "acik" || gizle) { serit.hidden = true; return; }
     const metin = {
       kapali: ["Bildirimler kapalı", "Yeni randevu geldiğinde telefonunuza bildirim gelmesi için bildirimleri açın."],
